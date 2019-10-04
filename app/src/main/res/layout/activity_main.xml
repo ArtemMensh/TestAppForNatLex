@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <!-- Toolbar -->
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/id_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:actionBarSize"
+        android:background="@color/colorToolbar"
+        android:elevation="4dp">
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        </android.support.constraint.ConstraintLayout>
+
+    </android.support.v7.widget.Toolbar>
+
+    <!-- Main View -->
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/MainView"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:background="@color/colorMainView">
+
+        <!-- City -->
+        <TextView
+            android:id="@+id/id_city"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:text="Moskow"
+            android:textColor="@color/colorBlack"
+            android:textSize="45sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Temperature -->
+        <TextView
+            android:id="@+id/id_temperature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="73"
+            android:textColor="@color/colorBlack"
+            android:textSize="65sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/id_city" />
+
+
+        <TextView
+            android:id="@+id/Fahrenheit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="5dp"
+            android:text="F"
+            android:textColor="@color/colorBlack"
+            android:textSize="50sp"
+            app:layout_constraintBottom_toBottomOf="@id/Celsius"
+            app:layout_constraintEnd_toStartOf="@id/id_switch" />
+
+        <!-- Button -->
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/id_switch"
+            android:checked="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="20dp"
+            android:theme="@style/MySwitch"
+            android:onClick="ChangeTemp"
+            app:layout_constraintBottom_toBottomOf="@id/Celsius"
+            app:layout_constraintEnd_toStartOf="@id/Celsius"
+
+            />
+
+
+        <TextView
+            android:id="@+id/Celsius"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:paddingBottom="5dp"
+            android:text="C"
+            android:textColor="@color/colorBlack"
+            android:textSize="50sp"
+            app:layout_constraintBottom_toBottomOf="@id/id_temperature"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <!--  Recycler View -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="20dp"
+        android:background="@color/colorScrollView">
+
+        <ScrollView
+            android:id="@+id/List_city"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="test"
+                android:onClick="Quit"/>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+</LinearLayout>
