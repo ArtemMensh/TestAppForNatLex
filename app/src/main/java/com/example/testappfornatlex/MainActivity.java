@@ -1,30 +1,21 @@
 package com.example.testappfornatlex;
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
@@ -33,12 +24,10 @@ public class MainActivity extends AppCompatActivity
     final private String WEATHER_KEY = "6056f57916b62096c5342e1c77536a79";
     final private String WEATHER_REQUEST_COORDINATE = "https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s";
     final private String WEATHER_REQUEST_TOWN = "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s";
-    private double lat_coordinate;
-    private double lon_coordinate;
-    private Date date;
     private Toolbar toolbar;
-   private TextView city, temp;
+    private TextView city, temp;
     private SwitchCompat switchCompat;
+    private int PERMISSION_LOCATION;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,22 +40,7 @@ public class MainActivity extends AppCompatActivity
         temp = findViewById(R.id.id_temperature);
         switchCompat = findViewById(R.id.id_switch);
 
-        MyLocation.SetUpLocationListener(this);
-
-    }
-
-    // Save coordinate in the variable
-    private void SaveCoordinate(Location location) {
-
-        lon_coordinate = location.getLongitude();
-        lat_coordinate = location.getLatitude();
-        date = new Date(location.getTime());
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
+        PERMISSION_LOCATION = MyLocation.SetUpLocationListener(this);
 
     }
 
@@ -88,8 +62,20 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.toString().equals(getResources().getString(R.string.menu_location))) {
-            Location loc = MyLocation.imHere;
+            if(PERMISSION_LOCATION == 1) {
+                Location l = MyLocation.imHere;
+                String request = String.format(WEATHER_REQUEST_COORDINATE, l.getLatitude(), l.getLongitude(), WEATHER_KEY);
+
+                String content = GetContent(request);
+
+                SetInformation(content);
+            }
+            else{
+                Toast info = Toast.makeText(this, "Location off", Toast.LENGTH_LONG);
+                info.show();
+            }
         }
+
         return false;
     }
 
@@ -97,6 +83,18 @@ public class MainActivity extends AppCompatActivity
     public boolean onQueryTextSubmit(String s) {
 
         String request = String.format(WEATHER_REQUEST_TOWN, s, WEATHER_KEY);
+
+        String content = GetContent(request);
+
+        SetInformation(content);
+
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String s) {return false;}
+
+    private String GetContent(String request){
         String content = null;
         GetUrlContentTask g = new GetUrlContentTask();
         try {
@@ -106,7 +104,10 @@ public class MainActivity extends AppCompatActivity
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        return content;
+    }
 
+    private void SetInformation(String content){
         switch (content) {
             case (""):
                 Toast toast = Toast.makeText(getApplicationContext(),
@@ -121,32 +122,21 @@ public class MainActivity extends AppCompatActivity
                 try {
                     JSONObject jsonObject = new JSONObject(content);
                     city.setText(jsonObject.getString("name"));
-                    setTemp(jsonObject.getJSONObject("main").getString("temp"));
+                    SetTemp(jsonObject.getJSONObject("main").getString("temp"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 break;
         }
-        return false;
     }
 
-    private void setTemp(String string) {
+    private void SetTemp(String string) {
         Double kel = Double.valueOf(string);
         if (switchCompat.isChecked()) {
             temp.setText(String.valueOf(Math.round(kel - 273.15)));
         } else {
             temp.setText(String.valueOf(Math.round((kel - 273.15) * (9 / 5) + 32)));
         }
-    }
-
-    @Override
-    public boolean onQueryTextChange(String s) {
-        return false;
-    }
-
-    public void Quit(View view) {
-        startActivity(new Intent(
-                android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
     }
 
     public void ChangeTemp(View view) {

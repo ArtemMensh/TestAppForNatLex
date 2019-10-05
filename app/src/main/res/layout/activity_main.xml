@@ -37,13 +37,13 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="10dp"
-            android:text="Moskow"
+            android:text="Moscow"
             android:textColor="@color/colorBlack"
             android:textSize="45sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Temperature -->
+        <!-- Temp -->
         <TextView
             android:id="@+id/id_temperature"
             android:layout_width="wrap_content"
@@ -67,7 +67,7 @@
             app:layout_constraintBottom_toBottomOf="@id/Celsius"
             app:layout_constraintEnd_toStartOf="@id/id_switch" />
 
-        <!-- Button -->
+        <!-- Switch -->
         <android.support.v7.widget.SwitchCompat
             android:id="@+id/id_switch"
             android:checked="true"

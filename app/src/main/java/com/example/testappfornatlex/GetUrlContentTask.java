@@ -1,9 +1,6 @@
 package com.example.testappfornatlex;
 
 import android.os.AsyncTask;
-import android.util.Log;
-import android.widget.Toast;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,12 +45,5 @@ public class GetUrlContentTask extends AsyncTask<String, Void, String> {
         content = stringBuilder.toString();
 
         return content;
-    }
-
-    @Override
-    protected void onPostExecute(String s) {
-        super.onPostExecute(s);
-
-
     }
 }
