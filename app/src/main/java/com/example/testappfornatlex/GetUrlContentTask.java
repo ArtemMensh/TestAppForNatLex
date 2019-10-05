@@ -7,12 +7,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class GetUrlContentTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... strings) {
-        HttpURLConnection httpURLConnection = null;
+        HttpURLConnection httpURLConnection;
         String content;
         String line;
         StringBuilder stringBuilder = new StringBuilder();
@@ -31,7 +32,7 @@ public class GetUrlContentTask extends AsyncTask<String, Void, String> {
 
         try {
             InputStream  is = httpURLConnection.getInputStream();
-            BufferedReader bf = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            BufferedReader bf = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
             while ((line=bf.readLine())!=null)
             {
                 stringBuilder.append(line);
