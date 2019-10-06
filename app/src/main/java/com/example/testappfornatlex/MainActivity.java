@@ -1,5 +1,8 @@
 package com.example.testappfornatlex;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -10,24 +13,38 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
         implements SearchView.OnQueryTextListener {
 
     final private String WEATHER_KEY = "6056f57916b62096c5342e1c77536a79";
-    final private String WEATHER_REQUEST_COORDINATE = "https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s";
-    final private String WEATHER_REQUEST_TOWN = "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s";
+    final private String WEATHER_REQUEST_COORDINATE =
+            "https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s";
+    final private String WEATHER_REQUEST_TOWN =
+            "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s";
     private Toolbar toolbar;
-    private TextView city, temp;
+    private TextView tv_city, tv_temp;
     private SwitchCompat switchCompat;
-    private int PERMISSION_LOCATION;
+    private ListView listView;
+    private Data currentData;
+    private DataAdapter adapter;
+
+    DBHelper dbHelper;
+    Cursor cursor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,17 +53,80 @@ public class MainActivity extends AppCompatActivity
         toolbar = findViewById(R.id.id_toolbar);
         setSupportActionBar(toolbar);
 
-        city = findViewById(R.id.id_city);
-        temp = findViewById(R.id.id_temperature);
+        tv_city = findViewById(R.id.id_city);
+        tv_temp = findViewById(R.id.id_temperature);
         switchCompat = findViewById(R.id.id_switch);
+        listView = findViewById(R.id.id_list);
 
-        PERMISSION_LOCATION = MyLocation.SetUpLocationListener(this);
+        MyLocation.SetUpLocationListener(this);
+
+        List<Data> list_items = LoadInfoOnDataBase();
+        adapter = new DataAdapter(this, R.layout.list_view, list_items);
+
+        // Listener for listView
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            @Override
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id)
+            {
+                // получаем нажатый элемент
+                Data item = adapter.getItem(position);
+                String request = String.format(WEATHER_REQUEST_TOWN, item.getName(), WEATHER_KEY);
+                String content = GetContent(request);
+                SetInformation(content, false);
+            }
+        });
+
+        if (!list_items.isEmpty()) {
+            StartFillInData(list_items);
+        }
+
+        // Fill in listView
+        listView.setAdapter(adapter);
 
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    private void StartFillInData(List<Data> list_items) {
+
+        // First element in header
+        Data first = list_items.get(0);
+        list_items.remove(0);
+        adapter.remove(first);
+
+        // Current element in header
+        currentData = first;
+
+        // Fill in textViews in header
+        tv_city.setText(first.getName());
+        tv_temp.setText(first.getTemp());
+
+    }
+
+    private List<Data> LoadInfoOnDataBase() {
+        List<Data> list_items = new ArrayList();
+
+        dbHelper = new DBHelper(this);
+        SQLiteDatabase sq = dbHelper.getReadableDatabase();
+
+        cursor = sq.query(DBHelper.TABLE_NAME, null, null, null, null, null, "time desc");
+
+        if (cursor.moveToFirst()) {
+            do {
+                String temp = cursor.getString(cursor.getColumnIndex(DBHelper.TEMPE));
+                String name = cursor.getString(cursor.getColumnIndex(DBHelper.NAME));
+                String time = cursor.getString(cursor.getColumnIndex(DBHelper.TIME));
+                String image = cursor.getString(cursor.getColumnIndex(DBHelper.IMAGE));
+
+                list_items.add(new Data(name, temp, time, image));
+
+
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        dbHelper.close();
+        sq.close();
+
+        return list_items;
     }
 
     @Override
@@ -62,15 +142,16 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.toString().equals(getResources().getString(R.string.menu_location))) {
-            if(PERMISSION_LOCATION == 1) {
+            MyLocation.SetUpLocationListener(this);
+
+            try {
                 Location l = MyLocation.imHere;
-                String request = String.format(WEATHER_REQUEST_COORDINATE, l.getLatitude(), l.getLongitude(), WEATHER_KEY);
-
+                String request = String.format(WEATHER_REQUEST_COORDINATE,
+                        l.getLatitude(), l.getLongitude(), WEATHER_KEY);
                 String content = GetContent(request);
+                SetInformation(content, true);
 
-                SetInformation(content);
-            }
-            else{
+            } catch (Exception e) {
                 Toast info = Toast.makeText(this, "Location off", Toast.LENGTH_LONG);
                 info.show();
             }
@@ -81,48 +162,67 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onQueryTextSubmit(String s) {
-
         String request = String.format(WEATHER_REQUEST_TOWN, s, WEATHER_KEY);
-
         String content = GetContent(request);
-
-        SetInformation(content);
+        SetInformation(content, false);
 
         return false;
     }
 
     @Override
-    public boolean onQueryTextChange(String s) {return false;}
+    public boolean onQueryTextChange(String s) {
+        return false;
+    }
 
-    private String GetContent(String request){
+    private String GetContent(String request) {
         String content = null;
         GetUrlContentTask g = new GetUrlContentTask();
+
         try {
             content = g.execute(request).get();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
+
         return content;
     }
 
-    private void SetInformation(String content){
+    private void SetInformation(String content, boolean location) {
         switch (content) {
             case (""):
                 Toast toast = Toast.makeText(getApplicationContext(),
                         "City not found", Toast.LENGTH_SHORT);
                 toast.show(); // information
                 break;
+
             case ("No connect"):
-                Toast info = Toast.makeText(getApplicationContext(), "Problem with connection to server", Toast.LENGTH_SHORT);
+                Toast info = Toast.makeText(getApplicationContext(),
+                        "Problem with connection to server", Toast.LENGTH_SHORT);
                 info.show();
                 break;
+
             default:
                 try {
                     JSONObject jsonObject = new JSONObject(content);
-                    city.setText(jsonObject.getString("name"));
-                    SetTemp(jsonObject.getJSONObject("main").getString("temp"));
+                    String name = jsonObject.getString("name");
+                    String temp = GetTempFromKel(jsonObject.getJSONObject("main").getString("temp"));
+
+                    tv_city.setText(name);
+                    tv_temp.setText(temp);
+
+                    // Transfer item from header to listView
+                    if (currentData != null) {
+
+                        adapter.insert(currentData, 0);
+                        adapter.notifyDataSetChanged();
+                    }
+
+                    // Create new Date obj for add in database and update current Data obj
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss ");
+                    String time = sdf.format(new Date());
+                    currentData = new Data(name, temp, time, String.valueOf(location));
+                    SaveCityDB(currentData);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -130,22 +230,46 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void SetTemp(String string) {
+    private void SaveCityDB(Data item) {
+
+        ContentValues cv = new ContentValues();
+        dbHelper = new DBHelper(this);
+        SQLiteDatabase sq = dbHelper.getWritableDatabase();
+
+        cv.put(DBHelper.NAME, item.getName());
+        cv.put(DBHelper.TEMPE, item.getTemp());
+        cv.put(DBHelper.TIME, item.getTime());
+        cv.put(DBHelper.IMAGE, item.getImage());
+
+        sq.insert(DBHelper.TABLE_NAME, null, cv);
+
+        sq.close();
+        dbHelper.close();
+
+    }
+
+    private String GetTempFromKel(String string) {
         Double kel = Double.valueOf(string);
+        String t;
         if (switchCompat.isChecked()) {
-            temp.setText(String.valueOf(Math.round(kel - 273.15)));
+            t = String.valueOf(Math.round(kel - 273.15));
         } else {
-            temp.setText(String.valueOf(Math.round((kel - 273.15) * (9 / 5) + 32)));
+            t = String.valueOf(Math.round((kel - 273.15) * (9 / 5) + 32));
         }
+
+        return t;
     }
 
     public void ChangeTemp(View view) {
-        String s = temp.getText().toString();
+        String s = tv_temp.getText().toString();
         Double d_temp = Double.valueOf(s);
+
         if (switchCompat.isChecked()) {
-            temp.setText(String.valueOf(Math.round((d_temp - 32) * (5.0 / 9))));
+            tv_temp.setText(String.valueOf(Math.round((d_temp - 32) * (5.0 / 9))));
         } else {
-            temp.setText(String.valueOf(Math.round(d_temp * (9.0 / 5) + 32)));
+            tv_temp.setText(String.valueOf(Math.round(d_temp * (9.0 / 5) + 32)));
         }
     }
+
+
 }

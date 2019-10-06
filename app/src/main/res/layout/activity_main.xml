@@ -37,7 +37,6 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="10dp"
-            android:text="Moscow"
             android:textColor="@color/colorBlack"
             android:textSize="45sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -48,7 +47,6 @@
             android:id="@+id/id_temperature"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="73"
             android:textColor="@color/colorBlack"
             android:textSize="65sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -104,18 +102,11 @@
         android:layout_marginTop="20dp"
         android:background="@color/colorScrollView">
 
-        <ScrollView
-            android:id="@+id/List_city"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:layout_width="wrap_content"
+           <ListView
+                android:id="@+id/id_list"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="test"
-                android:onClick="Quit"/>
-
-        </ScrollView>
+                />
 
     </LinearLayout>
 
