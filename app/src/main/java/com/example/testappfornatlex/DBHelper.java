@@ -19,10 +19,11 @@ public class DBHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    // Create table
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table " + TABLE_NAME + " ("
-                + KEY_ID+" integer primary key autoincrement,"
+                + KEY_ID + " integer primary key autoincrement,"
                 + TIME + " text,"
                 + NAME + " text,"
                 + IMAGE + " text,"

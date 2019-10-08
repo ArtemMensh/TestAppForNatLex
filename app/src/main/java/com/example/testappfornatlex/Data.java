@@ -1,6 +1,6 @@
 package com.example.testappfornatlex;
 
-public class Data {
+class Data {
 
     private String name;
     private String temp;
@@ -22,9 +22,5 @@ public class Data {
         this.temp = temp;
         this.time = time;
         this.image = image;
-
     }
-
-
-
 }

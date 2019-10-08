@@ -1,6 +1,7 @@
 package com.example.testappfornatlex;
 
 import android.os.AsyncTask;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +19,7 @@ public class GetUrlContentTask extends AsyncTask<String, Void, String> {
         String line;
         StringBuilder stringBuilder = new StringBuilder();
 
+        // Try connect to server
         try {
             httpURLConnection = (HttpURLConnection) new URL(strings[0]).openConnection();
             httpURLConnection.setReadTimeout(5000);
@@ -30,11 +32,11 @@ public class GetUrlContentTask extends AsyncTask<String, Void, String> {
             return "No connect";
         }
 
+        // Read answer
         try {
-            InputStream  is = httpURLConnection.getInputStream();
+            InputStream is = httpURLConnection.getInputStream();
             BufferedReader bf = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-            while ((line=bf.readLine())!=null)
-            {
+            while ((line = bf.readLine()) != null) {
                 stringBuilder.append(line);
             }
             bf.close();

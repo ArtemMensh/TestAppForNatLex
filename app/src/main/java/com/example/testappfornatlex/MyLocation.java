@@ -21,6 +21,7 @@ public class MyLocation implements LocationListener {
 
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Request permission location
             ActivityCompat.requestPermissions((Activity) context, new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
@@ -29,10 +30,9 @@ public class MyLocation implements LocationListener {
                     5000,
                     1000,
                     locationListener);
+            // get location
             imHere = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         }
-
-     return;
     }
 
     @Override

@@ -25,10 +25,10 @@
 
     <!-- Main View -->
     <android.support.constraint.ConstraintLayout
-        android:id="@+id/MainView"
+        android:id="@+id/id_mainView"
         android:layout_width="match_parent"
         android:layout_height="150dp"
-        android:background="@color/colorMainView">
+        android:background="@color/colorOrangeForHeader">
 
         <!-- City -->
         <TextView
@@ -48,6 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/colorBlack"
+
             android:textSize="65sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@+id/id_city" />
@@ -106,6 +107,8 @@
                 android:id="@+id/id_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+               android:dividerHeight="0dp"
+               android:divider="@color/colorTransparent"
                 />
 
     </LinearLayout>

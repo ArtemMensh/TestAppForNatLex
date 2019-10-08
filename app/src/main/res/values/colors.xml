@@ -5,7 +5,9 @@
     <color name="colorAccent">#D81B60</color>
     <color name="colorToolbar">#00AEEF</color>
     <color name="colorScrollView">#DEDEDE</color>
-    <color name="colorMainView">#EFC648</color>
+    <color name="colorLightBlueForHeader">#0785ED</color>
+    <color name="colorOrangeForHeader">#EFC648</color>
+    <color name="colorRedForHeader">#EA4200</color>
     <color name="colorBlack">#000000</color>
     <color name="colorTransparent">#00000000</color>
 </resources>
