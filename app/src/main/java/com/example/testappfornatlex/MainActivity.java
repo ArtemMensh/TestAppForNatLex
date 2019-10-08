@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity
                 Data item = adapter.getItem(position);
                 String request = String.format(WEATHER_REQUEST_TOWN, item.getName(), WEATHER_KEY);
                 String content = GetContent(request);
-                SetInformation(content, false);
+                SetInformation(content, Boolean.valueOf(item.getImage()));
             }
         });
 
