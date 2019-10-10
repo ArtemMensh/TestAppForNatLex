@@ -8,24 +8,4 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="MySwitch" parent="Theme.AppCompat.Light">
-
-        <item name="colorControlActivated">@color/colorOrangeForHeader</item>
-
-        <!-- Не активная полоса -->
-        <item name="android:colorForeground">@color/colorOrangeForHeader</item>
-
-        <item name="colorSwitchThumbNormal">@color/colorOrangeForHeader</item>
-
-        <item name="trackTint">@color/colorOrangeForHeader</item>
-
-        <item name="android:switchMinWidth">40px</item>
-
-        <item name="android:minWidth">100px</item>
-
-
-    </style>
-
-
-
 </resources>
