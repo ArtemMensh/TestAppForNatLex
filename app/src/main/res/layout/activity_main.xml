@@ -73,12 +73,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
-            android:layout_marginBottom="20dp"
-            android:theme="@style/MySwitch"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="15dp"
             android:onClick="ChangeTemp"
             app:layout_constraintBottom_toBottomOf="@id/Celsius"
             app:layout_constraintEnd_toStartOf="@id/Celsius"
-
+            android:thumb="@drawable/switch_custom_selector"
+            app:track="@drawable/switch_custom_track"
             />
 
 

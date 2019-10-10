@@ -19,9 +19,13 @@
 
         <item name="trackTint">@color/colorOrangeForHeader</item>
 
+        <item name="android:switchMinWidth">40px</item>
+
+        <item name="android:minWidth">100px</item>
 
 
     </style>
-    
-    
+
+
+
 </resources>
