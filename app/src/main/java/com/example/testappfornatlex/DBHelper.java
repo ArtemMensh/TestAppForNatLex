@@ -27,7 +27,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 + TIME + " text,"
                 + NAME + " text,"
                 + IMAGE + " text,"
-                + TEMPE + " text"
+                + TEMPE + " double"
                 + ");");
     }
 

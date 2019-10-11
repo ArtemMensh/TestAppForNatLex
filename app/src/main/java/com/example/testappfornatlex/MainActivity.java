@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,16 +40,18 @@ public class MainActivity extends AppCompatActivity
             "https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s";
     final private String WEATHER_REQUEST_TOWN =
             "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s";
+
     private Toolbar toolbar;
     private TextView tv_city, tv_temp;
     private SwitchCompat switchCompat;
     private ListView listView;
-    private Data currentData;
-    private DataAdapter adapter;
     private boolean CHECK_CELSIUS = true;
 
-    DBHelper dbHelper;
-    Cursor cursor;
+    private Data currentData;
+    private DataAdapter adapter;
+
+    private DBHelper dbHelper;
+    private Cursor cursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +60,10 @@ public class MainActivity extends AppCompatActivity
         toolbar = findViewById(R.id.id_toolbar);
         setSupportActionBar(toolbar);
 
-
         tv_city = findViewById(R.id.id_city);
         tv_temp = findViewById(R.id.id_temperature);
+        switchCompat = findViewById(R.id.id_switch);
+        listView = findViewById(R.id.id_list);
 
         // Listener for change color in the header
         tv_temp.addTextChangedListener(new TextWatcher() {
@@ -74,12 +78,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void afterTextChanged(Editable s) {
                 ChangeColorHeader();
-
             }
         });
-
-        switchCompat = findViewById(R.id.id_switch);
-        listView = findViewById(R.id.id_list);
 
         MyLocation.SetUpLocationListener(this);
 
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity
 
         // Fill in textViews in header
         tv_city.setText(first.getName());
-        tv_temp.setText(first.getTemp());
+        tv_temp.setText(first.getTemp().toString());
 
     }
 
@@ -151,13 +151,12 @@ public class MainActivity extends AppCompatActivity
 
         if (cursor.moveToFirst()) {
             do {
-                String temp = cursor.getString(cursor.getColumnIndex(DBHelper.TEMPE));
+                Double temp = cursor.getDouble(cursor.getColumnIndex(DBHelper.TEMPE));
                 String name = cursor.getString(cursor.getColumnIndex(DBHelper.NAME));
                 String time = cursor.getString(cursor.getColumnIndex(DBHelper.TIME));
                 String image = cursor.getString(cursor.getColumnIndex(DBHelper.IMAGE));
 
                 list_items.add(new Data(name, temp, time, image));
-
 
             } while (cursor.moveToNext());
         }
@@ -192,6 +191,7 @@ public class MainActivity extends AppCompatActivity
                 SetInformation(content, true);
 
             } catch (Exception e) {
+                e.printStackTrace();
                 Toast info = Toast.makeText(this, "Location off", Toast.LENGTH_LONG);
                 info.show();
             }
@@ -245,10 +245,13 @@ public class MainActivity extends AppCompatActivity
                 try {
                     JSONObject jsonObject = new JSONObject(content);
                     String name = jsonObject.getString("name");
-                    String temp = GetTempFromKel(jsonObject.getJSONObject("main").getString("temp"));
+                    Double temp = GetTempFromKel(jsonObject.getJSONObject("main").getDouble("temp"));
+
+                    // from 1.12341231 => 1.1
+                    temp = Double.valueOf(String.format("%.1f", temp).replace(',', '.'));
 
                     tv_city.setText(name);
-                    tv_temp.setText(temp + ".0");
+                    setTv_temp(temp);
 
                     // Transfer item from header to listView
                     if (currentData != null) {
@@ -260,6 +263,7 @@ public class MainActivity extends AppCompatActivity
                     // Create new Date obj for add in database and update current Data obj
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss ");
                     String time = sdf.format(new Date());
+
                     currentData = new Data(name, temp, time, String.valueOf(location));
                     SaveCityDB(currentData);
 
@@ -271,6 +275,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void LoadChartActivity(View view) {
+
+        view = (ImageView) view;
+
+        if(view.getBackground() == null)
+            return;
+
         // Find name city
         ViewGroup viewGroup = (ViewGroup) view.getParent();
         View view1 = viewGroup.getChildAt(0);
@@ -290,7 +300,8 @@ public class MainActivity extends AppCompatActivity
         dbHelper = new DBHelper(this);
         SQLiteDatabase sq = dbHelper.getWritableDatabase();
 
-        double temp = Integer.valueOf(item.getTemp());
+
+        Double temp = item.getTemp();
         if (switchCompat.isChecked() != CHECK_CELSIUS) {
             temp = FromKelvinToCelsius(temp);
         }
@@ -307,60 +318,73 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private String GetTempFromKel(String string) {
-        Double kel = Double.valueOf(string);
-        String t;
+    private Double GetTempFromKel(Double temp) {
         if (switchCompat.isChecked() == CHECK_CELSIUS) {
-            t = String.valueOf(Math.round(kel - 273.15));
+            temp = temp - 273.15;
         } else {
-            t = String.valueOf(Math.round((kel - 273.15) * (9 / 5) + 32));
+            temp = (temp - 273.15) * (9 / 5) + 32;
         }
 
-        return t;
+        // from 1.12341231 => 1.1
+        temp = Double.valueOf(String.format("%.1f", temp).replace(',', '.'));
+
+        return temp;
     }
 
     public void ChangeTemp(View view) {
-        String str;
-        Double d_temp = Double.valueOf(tv_temp.getText().toString());
+        try {
+            Double d_temp = Double.valueOf(tv_temp.getText().toString());
 
-        if (switchCompat.isChecked() == CHECK_CELSIUS) {
-            str = String.format("%.1f", FromKelvinToCelsius(d_temp)).replace(',', '.');
-        } else {
-            str = String.format("%.1f", FromCelsiusToFahrenheit(d_temp)).replace(',', '.');
+            if (switchCompat.isChecked() == CHECK_CELSIUS) {
+                d_temp = FromKelvinToCelsius(d_temp);
+            } else {
+                d_temp = FromCelsiusToFahrenheit(d_temp);
+            }
 
+            currentData.setTemp(d_temp);
+            setTv_temp(d_temp);
+
+            ChangeTempInListView();
+        } catch (Exception e) {
         }
-        currentData.setTemp(str);
-        tv_temp.setText(str);
-
-        ChangeTempInListView();
-
     }
 
     private void ChangeTempInListView() {
         for (int i = 0; i < adapter.getCount(); i++) {
             Data d = adapter.getItem(i);
-            double d_temp = Double.valueOf(d.getTemp());
-            String str;
-
+            double d_temp = d.getTemp();
             if (switchCompat.isChecked() == CHECK_CELSIUS) {
-                str = String.format("%.1f", FromKelvinToCelsius(d_temp)).replace(',', '.');
+                d_temp = FromKelvinToCelsius(d_temp);
             } else {
-                str = String.format("%.1f", FromCelsiusToFahrenheit(d_temp)).replace(',', '.');
+                d_temp = FromCelsiusToFahrenheit(d_temp);
 
             }
 
-            adapter.getItem(i).setTemp(str);
+            adapter.getItem(i).setTemp(d_temp);
         }
         adapter.notifyDataSetChanged();
     }
 
     private double FromKelvinToCelsius(double d_temp) {
-        return (d_temp - 32) * (5.0 / 9);
+        d_temp = (d_temp - 32) * (5.0 / 9);
+
+        // from 1.12341231 => 1.1
+        d_temp = Double.valueOf(String.format("%.1f", d_temp).replace(',', '.'));
+
+        return d_temp;
     }
 
     private double FromCelsiusToFahrenheit(double d_temp) {
-        return d_temp * (9.0 / 5) + 32;
+        d_temp = d_temp * (9.0 / 5) + 32;
+
+        // from 1.12341231 => 1.1
+        d_temp = Double.valueOf(String.format("%.1f", d_temp).replace(',', '.'));
+
+        return d_temp;
     }
 
-
+    private void setTv_temp(Double temp) {
+        String s_temp = temp.toString().replace(',', '.');
+        tv_temp.setText(s_temp);
+    }
 }

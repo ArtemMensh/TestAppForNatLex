@@ -32,7 +32,7 @@ public class Chart extends AppCompatActivity {
 
         if (cursor.moveToFirst()) {
             do {
-                String temp = cursor.getString(cursor.getColumnIndex(DBHelper.TEMPE));
+                Double temp = cursor.getDouble(cursor.getColumnIndex(DBHelper.TEMPE));
                 String name = cursor.getString(cursor.getColumnIndex(DBHelper.NAME));
                 String time = cursor.getString(cursor.getColumnIndex(DBHelper.TIME));
                 String image = cursor.getString(cursor.getColumnIndex(DBHelper.IMAGE));
